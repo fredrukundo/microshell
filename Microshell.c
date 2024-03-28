@@ -6,10 +6,52 @@
 /*   By: frukundo <frukundo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/25 23:36:48 by frukundo          #+#    #+#             */
-/*   Updated: 2024/03/25 23:42:35 by frukundo         ###   ########.fr       */
+/*   Updated: 2024/03/28 08:57:10 by frukundo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Microshel.h"
+
+int err(char *str)
+{
+    while (*str)
+        write(2, str++, 1);
+    return 1;
+    
+}
+
+int cd(char **av, int i)
+{
+    if (i != 2)
+        err("error: cd: bad arguments\n");
+    else if(chdir(av[1]) == -1)
+        return err("error: cd: can not chamge directory to "), err(av[1]), err("\n");
+    return (0);
+}
+
+int exec(char **av, char **envp, int i)
+{
+    int fd[2];
+    int status;
+    int has_pipe = av[i] && !strcmp(av[i], "|");
+    
+    if (has_pipe && pipe(fd) == -1)
+        return err("error: fatal\n");
+    int pid = fork();
+    if (!pid)
+    {
+        av[i] = 0;
+        if (has_pipe && (dup2(fd[1], 1) == -1 || close(fd[1]) == -1 || close(fd[0]) == -1))
+            return err("error: fatal\n");
+        execve(*av, av, envp);
+        return err("error: cannot execute "), err(*av), err("\n");
+    }
+    waitpid(pid, &status, 0);
+    if (has_pipe && (dup2(fd[0], 0) == -1 || close(fd[1]) == -1 || close(fd[0]) == -1))
+        return err("error: fatal\n");
+    return WIFEXITED(status) && WEXITSTATUS(status);
+    
+}
 int main(int ac, char **av, char **envp)
 {
     int i = 0;
