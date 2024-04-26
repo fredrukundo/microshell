@@ -7,7 +7,7 @@ Write a program that will behave like executing a shell command
 
 - Executable's path will be absolute or relative but your program must not build a path (from the PATH variable for example)
 
-- You must implement "|" and ";" like in bash
+- You must implement "|" and ";" like bash does
 
    - we will never try a "|" immediately followed or preceded by nothing or "|" or ";"
 - Your program must implement the built-in command cd only with a path as argument (no '-' or without parameters)
